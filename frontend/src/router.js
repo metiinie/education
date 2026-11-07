@@ -1,55 +1,88 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { usersStore } from '@/stores/user'
 import { sessionStore } from '@/stores/session'
-import { studentStore } from '@/stores/student'
 
 const routes = [
-  { path: '/', redirect: '/schedule' },
+  {
+    path: '/',
+    redirect: '/schedule',
+  },
+  {
+    path: '/login',
+    name: 'Login',
+    component: () => import('@/pages/Login.vue'),
+    meta: { isPublic: true },
+  },
   {
     path: '/schedule',
     name: 'Schedule',
     component: () => import('@/pages/Schedule.vue'),
+    meta: { requiresAuth: true },
   },
   {
     path: '/grades',
     name: 'Grades',
     component: () => import('@/pages/Grades.vue'),
+    meta: { requiresAuth: true },
   },
   {
     path: '/fees',
     name: 'Fees',
     component: () => import('@/pages/Fees.vue'),
+    meta: { requiresAuth: true },
   },
   {
     path: '/attendance',
     name: 'Attendance',
     component: () => import('@/pages/Attendance.vue'),
+    meta: { requiresAuth: true },
   },
   {
-    path: '/:catchAll(.*)',
-    redirect: '/schedule',
+    path: '/:catchAll(.*)*',
+    name: 'NotFound',
+    redirect: (to) => {
+      const session = sessionStore()
+      return session.isLoggedIn ? '/schedule' : '/login'
+    },
   },
 ]
 
-let router = createRouter({
+const router = createRouter({
   history: createWebHistory('/student-portal'),
   routes,
 })
 
 router.beforeEach(async (to, from) => {
-  const { isLoggedIn, user: sessionUser } = sessionStore()
-  const { user } = usersStore()
-  const { student } = studentStore()
+  const session = sessionStore()
 
-  if (!isLoggedIn) {
-    window.location.href = '/login'
-    return await next(false)
+  // 1. Ensure authentication is fully initialized before deciding on route access
+  if (!session.isInitialized) {
+    await session.initSession()
   }
 
-  if (user.data.length === 0) {
-    await user.reload()
+  // 2. Handle public routes (e.g. Login)
+  if (to.meta.isPublic) {
+    if (session.isLoggedIn) {
+      const target = to.query.redirect || '/schedule'
+      if (to.path !== target) {
+        return target
+      }
+    }
+    return true
   }
-  await student.reload()
+
+  // 3. Handle protected routes (require authentication)
+  if (!session.isLoggedIn) {
+    if (to.name === 'Login' || to.path === '/login') {
+      return true
+    }
+    return {
+      name: 'Login',
+      query: { redirect: to.fullPath },
+    }
+  }
+
+  // 4. Authenticated user allowed to access requested route
+  return true
 })
 
 export default router

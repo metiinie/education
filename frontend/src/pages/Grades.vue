@@ -76,13 +76,17 @@ const student_programs = createResource({
   },
   onSuccess: (response) => {
     let programs = []
-    response.forEach((program) => {
-      programs.push({
-        label: program.program,
-        onClick: () => (selectedProgram.value = program.program),
+    if (Array.isArray(response)) {
+      response.forEach((program) => {
+        programs.push({
+          label: program.program,
+          onClick: () => (selectedProgram.value = program.program),
+        })
       })
-    })
-    selectedProgram.value = programs[programs.length - 1].label
+    }
+    if (programs.length > 0) {
+      selectedProgram.value = programs[programs.length - 1]?.label || ''
+    }
     allPrograms.value = programs
   },
   auto: true,

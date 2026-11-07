@@ -11,26 +11,24 @@ export const studentStore = defineStore('education-student', () => {
     url: 'education.education.api.get_student_info',
     onSuccess(info) {
       if (!info) {
-        window.location.href = '/app'
+        studentInfo.value = {}
+        currentProgram.value = {}
+        studentGroups.value = []
+        return
       }
-      currentProgram.value = info.current_program
-      // remove current_program from info
+      currentProgram.value = info.current_program || {}
       delete info.current_program
-      studentGroups.value = info.student_groups
+      studentGroups.value = info.student_groups || []
       delete info.student_groups
       studentInfo.value = info
     },
     onError(err) {
-      console.error(err)
+      studentInfo.value = {}
+      currentProgram.value = {}
+      studentGroups.value = []
+      console.warn('Student info fetch error:', err)
     },
   })
-
-  // const s = createDocumentResource({
-  // 	doctype:"Student",
-  // 	whitelist: {
-  // 		'get_student_info': get_student_info
-  // 	}
-  // })
 
   function getStudentInfo() {
     return studentInfo
@@ -38,7 +36,6 @@ export const studentStore = defineStore('education-student', () => {
   function getCurrentProgram() {
     return currentProgram
   }
-
   function getStudentGroups() {
     return studentGroups
   }

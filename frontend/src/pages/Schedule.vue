@@ -26,18 +26,20 @@ const scheduleResource = createResource({
   },
   onSuccess: (response) => {
     let schedule = []
-    response.forEach((classSchedule) => {
-      schedule.push({
-        title: classSchedule.title,
-        with: classSchedule.faculty_name,
-        name: classSchedule.name,
-        room: classSchedule.room,
-        date: classSchedule.schedule_date,
-        from_time: classSchedule.from_time.split('.')[0],
-        to_time: classSchedule.to_time.split('.')[0],
-        color: classSchedule.class_schedule_color,
+    if (Array.isArray(response)) {
+      response.forEach((classSchedule) => {
+        schedule.push({
+          title: classSchedule.title,
+          with: classSchedule.faculty_name,
+          name: classSchedule.name,
+          room: classSchedule.room,
+          date: classSchedule.schedule_date,
+          from_time: classSchedule.from_time ? classSchedule.from_time.split('.')[0] : '',
+          to_time: classSchedule.to_time ? classSchedule.to_time.split('.')[0] : '',
+          color: classSchedule.class_schedule_color,
+        })
       })
-    })
+    }
     events.value = schedule
   },
   auto: true,

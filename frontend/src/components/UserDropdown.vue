@@ -32,7 +32,7 @@
             {{ educationSettings?.name || 'Education' }}
           </div>
           <div class="mt-1 text-sm text-gray-700 leading-none">
-            {{ user.data.full_name }}
+            {{ user.data?.full_name || user.data?.name || '' }}
           </div>
         </div>
 

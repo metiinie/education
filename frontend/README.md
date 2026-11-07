@@ -1,46 +1,116 @@
-# Frappe UI Starter
+# Frappe Education - Frontend (Student Portal)
 
-This template should help get you started developing custom frontend for Frappe
-apps with Vue 3 and the Frappe UI package.
+This directory contains the modern **Single Page Application (SPA)** for the Frappe Education Student Portal, built with **Vue 3**, **Vite**, **Tailwind CSS**, and **Frappe UI** (`frappe-ui`).
 
-![Auth](https://user-images.githubusercontent.com/34810212/236846289-ac31c292-81ea-4456-be65-95773a4049be.png)
+---
 
-![Home](https://user-images.githubusercontent.com/34810212/236846299-fd534e2b-1c06-4f01-a4f2-91a27547cd55.png)
+## Tech Stack
 
-This boilerplate sets up Vue 3, Vue Router, TailwindCSS, and Frappe UI out of
-the box. It also has basic authentication frontend.
+- **Framework**: [Vue 3](https://vuejs.org/) (Composition API, `<script setup>`)
+- **UI Components**: [Frappe UI](https://github.com/frappe/frappe-ui)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/) & Inter font family
+- **State Management**: [Pinia](https://pinia.vuejs.org/)
+- **Routing**: [Vue Router 4](https://router.vuejs.org/)
+- **Build Tool**: [Vite](https://vitejs.dev/)
+- **Calendar & Icons**: Qalendar, Feather Icons, Lucide Icons
 
-## Usage
+---
 
-This template is meant to be cloned inside an existing Frappe App. Assuming your
-apps name is `todo`. Clone this template in the root folder of your app using `degit`.
+## Directory Structure
 
 ```
-cd apps/todo
-npx degit NagariaHussain/doppio_frappeui_starter frontend
+frontend/
+├── public/                 # Vite static assets (favicon, images)
+├── src/
+│   ├── assets/             # Inter web fonts and global CSS
+│   ├── components/         # Reusable Vue components
+│   │   ├── AttendanceDetail.vue     # Daily attendance breakdown modal
+│   │   ├── Calendar.vue             # Timetable calendar display
+│   │   ├── FeesPaymentDialog.vue    # Fee checkout & payment integration
+│   │   ├── Navbar.vue               # Top navigation header
+│   │   ├── NewLeave.vue             # Leave application modal form
+│   │   ├── ProfileModal.vue         # Student profile details dialog
+│   │   ├── Sidebar.vue              # Main portal navigation sidebar
+│   │   └── UserDropdown.vue         # User profile menu & logout
+│   ├── pages/              # Portal page views (Routed)
+│   │   ├── Attendance.vue  # Monthly & term attendance overview
+│   │   ├── Fees.vue        # Invoices, fee structures, and receipts
+│   │   ├── Grades.vue      # Academic report cards & quiz results
+│   │   ├── Home.vue        # Student dashboard & announcements
+│   │   ├── Leaves.vue      # Submitted leave history & status
+│   │   ├── Login.vue       # Authentication login form
+│   │   ├── Schedule.vue    # Weekly class & subject schedule
+│   │   └── SchoolDiary.vue # Daily notices & homework diary
+│   ├── stores/             # Pinia / Reactive state stores
+│   │   ├── session.js      # Login/logout authentication state
+│   │   ├── student.js      # Student profile & enrollment context
+│   │   ├── user.js         # Frappe user record
+│   │   └── leave.js        # Leave application management
+│   ├── utils/              # Helper utilities and date formatters
+│   ├── App.vue             # Root Vue component with main layout
+│   ├── index.css           # Tailwind CSS directives & global resets
+│   ├── main.js             # Vue app bootstrapping & plugin setup
+│   └── router.js           # Client-side route declarations
+├── index.html              # HTML shell template
+├── package.json            # Node dependencies and build scripts
+├── postcss.config.js       # PostCSS configuration for Tailwind
+├── tailwind.config.js      # Tailwind theme configuration
+├── vite.config.js          # Vite configuration & proxy settings
+└── yarn.lock               # Deterministic dependency lockfile
+```
+
+---
+
+## Available Pages & Routes
+
+| Route | Page | Description |
+| :--- | :--- | :--- |
+| `/` | `Home.vue` | Dashboard with upcoming classes, notifications, and overview |
+| `/login` | `Login.vue` | Frappe authentication login view |
+| `/schedule` | `Schedule.vue` | Weekly schedule and timetable |
+| `/attendance` | `Attendance.vue` | Student attendance tracker and percentage metrics |
+| `/fees` | `Fees.vue` | Outstanding fees, invoices, and online payment dialog |
+| `/grades` | `Grades.vue` | Assessment results, courses, and grade summaries |
+| `/leaves` | `Leaves.vue` | Leave applications and status tracking |
+| `/diary` | `SchoolDiary.vue` | School diary and announcements |
+
+---
+
+## Development Setup
+
+### 1. Install Dependencies
+Always use `yarn` inside this directory:
+```bash
 cd frontend
 yarn
-yarn dev
 ```
 
-In a development environment, you need to put the below key-value pair in your `site_config.json` file:
+### 2. Configure Development Proxy
+In development, Vite proxies API requests to your local Frappe server (typically on `http://education.localhost:8000` or `http://localhost:8000`).
 
-```
+Ensure your Frappe site's `site_config.json` contains:
+```json
 "ignore_csrf": 1
 ```
+This enables authenticated API communication between Vite (port `5173`) and Frappe (port `8000`).
 
-This will prevent `CSRFToken` errors while using the vite dev server. In production environment, the `csrf_token` is attached to the `window` object in `index.html` for you.
+### 3. Run Development Server
+```bash
+yarn dev
+```
+Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-The Vite dev server will start on the port `8080`. This can be changed from `vite.config.js`.
-The development server is configured to proxy your frappe app (usually running on port `8000`). If you have a site named `todo.test`, open `http://todo.test:8080` in your browser. If you see a button named "Click to send 'ping' request", congratulations!
+---
 
-If you notice the browser URL is `/frontend`, this is the base URL where your frontend app will run in production.
-To change this, open `src/router.js` and change the base URL passed to `createWebHistory`.
+## Production Build Pipeline
 
-## Resources
+When building for production, the Vite bundle is compiled directly into the backend directory and entry point:
 
-- [Vue 3](https://v3.vuejs.org/guide/introduction.html)
-- [Vue Router](https://next.router.vuejs.org/guide/)
-- [Frappe UI](https://github.com/frappe/frappe-ui)
-- [TailwindCSS](https://tailwindcss.com/docs/utility-first)
-- [Vite](https://vitejs.dev/guide/)
+```bash
+yarn build
+```
+
+This script:
+1. Compiles optimized JS/CSS bundles to `../education/public/frontend/` with public path `/assets/education/frontend/`.
+2. Copies `index.html` to `../education/www/student-portal.html`.
+3. In production, Frappe serves the Single Page Application directly from the `/student-portal` route.

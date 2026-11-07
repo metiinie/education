@@ -6,12 +6,12 @@ export const usersStore = defineStore('education-users', () => {
   const user = createResource({
     url: 'education.education.api.get_user_info',
     cache: 'User',
-    initialData: [],
+    initialData: null,
     onError(error) {
-      console.log(error)
-      console.log(error.exc_type)
       if (error && error.exc_type === 'AuthenticationError') {
-        router.push('/login')
+        if (router.currentRoute.value.name !== 'Login') {
+          router.push({ name: 'Login' })
+        }
       }
     },
   })

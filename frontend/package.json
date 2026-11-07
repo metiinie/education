@@ -4,9 +4,9 @@
   "version": "0.0.0",
   "scripts": {
     "dev": "vite",
-    "build": "vite build --base=/assets/education/frontend/ && yarn copy-html-entry",
+    "build": "vite build --base=/assets/education/frontend/ && node ./copy-entry.js",
     "preview": "vite preview",
-    "copy-html-entry": "cp ../education/public/frontend/index.html ../education/www/student-portal.html"
+    "copy-html-entry": "node ./copy-entry.js"
   },
   "dependencies": {
     "dayjs": "^1.11.10",

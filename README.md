@@ -2,230 +2,202 @@
 
 <img src=".github/edu-logo.svg" alt="Frappe Education Logo" width="80">
 
-<h1>Frappe Education</h1>
+# Frappe Education
 
 **Empowering Schools with Smarter Management**
 
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/frappe/education)
+[![License: GPL-3.0](https://img.shields.io/badge/License-GPLv3-blue.svg)](license.txt)
 
-</div>
-
-<div align="center">
-	<img width="1552" alt="Screenshot 2025-01-01 at 6 24 15 PM" src="https://github.com/user-attachments/assets/46af048c-749f-41f7-8d10-47e4fa643592" width="100%" />
-
-</div>
 <br />
-<div align="center">
-	<a href="https://frappe.io/education">Website</a>
-	-
-	<a href="https://docs.frappe.io/education">Documentation</a>
+
+[Website](https://frappe.io/education) • [Documentation](https://docs.frappe.io/education) • [Community Forum](https://discuss.frappe.io/c/erpnext/schools-college-education/40) • [Telegram Group](https://t.me/frappe_education)
+
 </div>
 
-## Frappe Education
+---
 
-Frappe Education is an open-source and user-friendly Education Management System
-designed to streamline the administrative and academic processes of educational
-institutions. It is a powerful module based on the ERPNext software.
+## 🏛️ System Architecture
 
-### Motivation
+Frappe Education is structured into a modern full-stack decoupled architecture comprising a **Python Backend (Frappe App)**, a **Vue 3 Single Page Application Frontend**, and a containerized **Docker Environment**:
 
-All the tools to manage which are available in the market were just not good
-enough.They were way too scatered, or too expensive or too complex to use. We
-wanted to create a tool that is easy to use, affordable and can be customized as
-per the needs of the institution. Frappe Education is dedicated to making
-education management more efficient and less time-consuming.
-
-### Key Features
-
-- **Student & Teacher Management** - Manage student and teacher profiles,
-  attendance.
-
-- **Admission Management** - Streamline the admission process for new students.
-
-- **Fee Management** - Organize and manage the fee structure and schedule
-  payments.
-
-- **Course Scheduling & Exam Planning** - Efficiently schedule courses and
-  manage course calendars.
-
-- **Student Portal** - Students can visit the portal to check their timetable,
-  attendance, pay fees online, and see current and previous grades.
-
-<details open>
-<summary >View Screenshots</summary>
-<h3></h3>
-<div align="center">
-	<sub>
-		Student Management
-	</sub>
-</div>
-
-<img width="1300" alt="Screenshot 2025-01-01 at 6 09 34 PM" src="https://github.com/user-attachments/assets/78263a31-eb9f-45f0-a7a4-486f75c2b774" />
-
-<div align="center">
-	<sub>
-		Organize and manage the fee structure and schedule payments.
-	</sub>
-</div>
-
-<img width="1300" alt="Screenshot 2025-01-01 at 6 12 40 PM" src="https://github.com/user-attachments/assets/7dcf7e7b-a003-4520-a41e-84ca553e7f0d" />
-
-<div align="center">
-	<sub>
-		Efficiently schedule courses and manage course calendars. 🗓️
-	</sub>
-</div>
-
-<img width="1300" alt="Screenshot 2025-01-01 at 6 19 49 PM" src="https://github.com/user-attachments/assets/19106f12-c278-48f9-8be3-47db5ce3a5f3" />
-
-<div align="center">
-	<sub>
-		Student Portal - Fee Payment Records
-	</sub>
-</div>
-
-<img width="1300" alt="Screenshot 2025-01-01 at 6 16 27 PM" src="https://github.com/user-attachments/assets/0640c623-bc81-4308-a15d-53a5977d5011" />
-
-</details>
-<br>
-
-### Under the Hood
-
-- [**Frappe Framework**](https://github.com/frappe/frappe): A full-stack web
-  application framework written in Python and Javascript.
-
-- [**ERPNext**](https://github.com/frappe/erpnext) - An open-source, modern ERP
-  system that includes modules for accounting, inventory, manufacturing, and
-  more.
-
-- [**Frappe UI**](https://github.com/frappe/frappe-ui): A Vue-based UI library,
-  to provide a modern user interface.
-
-## Production Setup
-
-### Managed Hosting
-
-You can try [Frappe Cloud](https://frappecloud.com), a simple, user-friendly and
-sophisticated [open-source](https://github.com/frappe/press) platform to host
-Frappe applications with peace of mind.
-
-It takes care of installation, setup, upgrades, monitoring, maintenance and
-support of your Frappe deployments. It is a fully featured developer platform
-with an ability to manage and control multiple Frappe deployments.
-
-<div>
-	<a href="https://frappecloud.com/education/signup" target="_blank">
-		<picture>
-			<source media="(prefers-color-scheme: dark)" srcset="https://frappe.io/files/try-on-fc-white.png">
-			<img src="https://frappe.io/files/try-on-fc-black.png" alt="Try on Frappe Cloud" height="28" />
-		</picture>
-	</a>
-</div>
-
-### Self Hosting
-
-Follow these steps to set up Frappe Education in production:
-
-**Step 1**: Download the easy install script
-
-```bash
-wget https://frappe.io/easy-install.py
+```mermaid
+graph TD
+    User["Student / Parent / Staff"] -->|Browser| WebClient["Frontend SPA (Vue 3 + Frappe UI)<br/>Port 5173 / /student-portal"]
+    User -->|Browser| DeskUI["Frappe Desk (Admin & Faculty UI)<br/>Port 8000 / /app/education"]
+    
+    WebClient -->|Vite Proxy / REST API / RPC| BackendServer["Frappe Backend Server (Python)<br/>education/ (DocTypes, Hooks, APIs)"]
+    DeskUI -->|Direct RPC / REST| BackendServer
+    
+    BackendServer -->|SQL Transactions| MariaDB[(MariaDB 10.8)]
+    BackendServer -->|Cache & Queues| Redis[(Redis Caching & Socket.IO)]
 ```
 
-**Step 2**: Run the deployment command
+---
 
-```bash
-python3 ./easy-install.py deploy \
-    --project=education_prod_setup \
-    --email=your_email.example.com \
-    --image=ghcr.io/frappe/education \
-    --version=stable \
-    --app=education \
-    --sitename subdomain.domain.tld
+## 📁 Repository Directory Structure
+
+```
+.
+├── 🎨 frontend/                     # FRONTEND: Vue 3 + Frappe UI Single Page Application
+│   ├── public/                      # Static public web assets
+│   ├── src/                         # Application source code
+│   │   ├── assets/                  # Inter fonts, global styles
+│   │   ├── components/              # Vue UI components (Navbar, Sidebar, Modals, Forms)
+│   │   ├── pages/                   # Views: Attendance, Fees, Grades, Schedule, Leaves, Diary
+│   │   ├── stores/                  # Pinia state stores (session, student, user, leave)
+│   │   ├── utils/                   # Helpers, formatters
+│   │   ├── App.vue                  # Main application wrapper
+│   │   ├── index.css                # Tailwind CSS entrypoint
+│   │   ├── main.js                  # App bootstrap
+│   │   └── router.js                # Vue Router route map
+│   ├── index.html                   # HTML entry shell
+│   ├── package.json                 # Frontend dependencies & scripts
+│   ├── vite.config.js               # Vite build & Frappe API proxy config
+│   ├── tailwind.config.js           # Tailwind configuration
+│   └── README.md                    # Detailed Frontend documentation
+│
+├── ⚙️ education/                    # BACKEND: Core Frappe Python Application Package
+│   ├── api/                         # REST & RPC endpoints, session & permission checks
+│   ├── config/                      # Desktop icon and module configuration
+│   ├── education/                   # Core Domain Models
+│   │   ├── doctype/                 # 50+ DocTypes (Student, Program, Course, Fees, etc.)
+│   │   ├── report/                  # Analytics and financial/academic reports
+│   │   ├── web_form/                # Public admission application forms
+│   │   └── workspace/               # Desk workspaces and dashboards
+│   ├── overrides/                   # DocType method overrides and event hooks
+│   ├── patches/                     # Database migration patches
+│   ├── public/                      # Static assets served by Frappe web server
+│   │   └── frontend/                # Compiled production bundle from frontend/
+│   ├── templates/                   # Jinja2 web templates
+│   ├── translations/                # Multilingual translations
+│   ├── www/                         # Portal web routes (student-portal.html)
+│   ├── hooks.py                     # Frappe event bindings, routes, and desk hooks
+│   ├── install.py                   # Post-installation fixtures and setup
+│   ├── modules.txt                  # Module registry
+│   ├── patches.txt                  # Migration patch list
+│   └── README.md                    # Detailed Backend documentation
+│
+├── 🐳 docker/                       # DEVOPS: Containerized Local Environment
+│   ├── docker-compose.yml           # Compose stack: MariaDB, Redis, and Frappe Bench
+│   └── init.sh                      # Automated site provisioning & app installation
+│
+├── .github/                         # CI/CD workflows and assets
+├── package.json                     # Root build and dev delegate scripts
+├── pyproject.toml                   # Python package definition (Flit) and Ruff linting rules
+├── MANIFEST.in                      # Python package build inclusion manifest
+└── README.md                        # Master architectural overview and setup guide
 ```
 
-Replace the following parameters with your values:
+---
 
-- `your_email.example.com`: Your email address
-- `subdomain.domain.tld`: Your domain name where Education will be hosted
+## 🎨 1. Frontend: Vue 3 Student Portal
 
-The script will set up a production-ready instance of Frappe Education with all
-the necessary configurations in about 5 minutes.
+The frontend is a fast, responsive Single Page Application built for students and guardians.
 
-## Development Setup
+- **Stack**: Vue 3 (Composition API), Vite, Tailwind CSS, Frappe UI, Pinia, Vue Router.
+- **Portals & Features**:
+  - **Schedule**: Weekly timetable, subject schedule, and class calendar.
+  - **Attendance**: Monthly attendance records and leave balance.
+  - **Fees & Payments**: Invoices, payment history, and payment gateway dialog.
+  - **Grades & Report Cards**: Course results, grade point averages, and quiz scores.
+  - **School Diary**: Daily announcements, tasks, and teacher notes.
+  - **Leave Applications**: Request leaves and track approval statuses.
 
-### Local
+👉 **See the complete [Frontend Guide](frontend/README.md)** for detailed component listings, state stores, and development proxy configuration.
 
-1. Install bench and setup a `frappe-bench` directory by following the
-   [Installation Steps](https://frappeframework.com/docs/user/en/installation)
-1. Install ERPNext by running `bench get-app erpnext`
-1. Once ERPNext is installed, install the Education App by using
-   `bench get-app education`
+---
 
-1. In a separate terminal window, create a new site by running
-   `bench new-site education.test`
-1. Map your site to localhost with the command
-   `bench --site education.test add-to-hosts`
-1. After that, you can install the Education app on the required site by running
-   ```jsx
-   $ bench --site sitename install-app education
-   ```
-1. Now open the URL `http://education.test:8000/education` in your browser, you
-   should see the app running
-1. To access student portal, open the URL
-   `http://education.test:8000/student-portal` in your browser, you should see
-   the student portal running.
+## ⚙️ 2. Backend: Frappe Python Application
 
-### Docker
+The backend is a robust educational management engine running on Frappe Framework and ERPNext.
 
-You need Docker, docker-compose and git setup on your machine. Refer
-[Docker documentation](https://docs.docker.com/). After that, follow below
-steps:
+- **Stack**: Python 3.10+, MariaDB, Redis, Frappe Bench.
+- **Why `education/` is the Backend Package**:
+  In Frappe, Python packages match `app_name = "education"`. Frappe dynamically resolves controllers using `import education` and `frappe.get_module(...)`.
+- **Core Domains**:
+  - **Admissions & Enrollment**: Multi-stage admissions, applicant registrations, and student profiles.
+  - **Curriculum & Academics**: Programs, courses, subjects, academic years, and terms.
+  - **Assessments & Evaluation**: Grading scales, grade books, assessment plans, quizzes, and questions.
+  - **Fee Management**: Integrated with ERPNext accounting; fee structures, schedules, and receipts.
+  - **Campus & Facilities**: Campus, building, floor, room scheduling, and hostel allocation.
 
-**Step 1**: Setup folder and download the required files
+👉 **See the complete [Backend Guide](education/README.md)** for DocType catalog, REST API endpoints, and hooks.
 
-    mkdir frappe-education
-    cd frappe-education
+---
 
-    # Download the docker-compose file
-    wget -O docker-compose.yml https://raw.githubusercontent.com/frappe/education/develop/docker/docker-compose.yml
+## 🚀 Quick Start & Development Setup
 
-    # Download the setup script
-    wget -O init.sh https://raw.githubusercontent.com/frappe/education/develop/docker/init.sh
+### Option A: Docker (Recommended for Quick Setup)
 
-**Step 2**: Run the container and daemonize it
+Run the entire stack with Docker Compose:
 
-    docker compose up -d
+```bash
+cd docker
+docker compose up -d
+```
 
-**Step 3**: The site
-[http://education.localhost:8000/](http://education.localhost:8000) should now
-be available. The default credentials are:
+The site will be available at [http://education.localhost:8000](http://education.localhost:8000).
+- **Default Username**: `Administrator`
+- **Default Password**: `admin`
 
-- Username: Administrator
-- Password: admin
+### Option B: Local Development (Bench + Vite)
 
-## Compatibility matrix
+#### 1. Backend Setup
+```bash
+# Setup Frappe Bench environment
+bench init frappe-bench
+cd frappe-bench
 
-| Education Branch | Compatible Frappe Framework Version |
-| ---------------- | ----------------------------------- |
-| version-15.1     | version-15                          |
-| version-15.2     | version-15                          |
-| version-16       | version-16                          |
-| develop          | develop branch                      |
+# Fetch apps
+bench get-app erpnext
+bench get-app education /path/to/this/repo
 
-## Learn and connect
+# Create and configure site
+bench new-site education.test
+bench --site education.test install-app erpnext
+bench --site education.test install-app education
 
-- [Telegram Public Group](https://t.me/frappe_education)
-- [Discuss Forum](https://discuss.frappe.io/c/erpnext/schools-college-education/40)
-- [Documentation](https://docs.frappe.io/education) |
+# Start Frappe development server
+bench start
+```
 
-<br>
-<br>
-<div align="center">
-	<a href="https://frappe.io" target="_blank">
-		<picture>
-			<source media="(prefers-color-scheme: dark)" srcset="https://frappe.io/files/Frappe-white.png">
-			<img src="https://frappe.io/files/Frappe-black.png" alt="Frappe Technologies" height="28"/>
-		</picture>
-	</a>
-</div>
+#### 2. Frontend Setup
+From the repository root or `frontend/` directory:
+```bash
+# From repository root
+npm run dev
+
+# Or directly in frontend
+cd frontend
+yarn
+yarn dev
+```
+Open [http://localhost:5173](http://localhost:5173) to access the interactive Vue 3 student portal with hot-module reloading.
+
+#### 3. Building Frontend for Production
+```bash
+cd frontend
+yarn build
+```
+This builds the SPA into `education/public/frontend` and updates `education/www/student-portal.html`. The portal is then accessible directly through Frappe at `/student-portal`.
+
+---
+
+## 🧹 Code Quality & Linting
+
+- **Python (Backend)**: Formatted and linted with [Ruff](https://github.com/astral-sh/ruff) via `pyproject.toml`:
+  ```bash
+  ruff check education
+  ruff format education
+  ```
+- **JavaScript/Vue (Frontend)**: Formatted with Prettier:
+  ```bash
+  npx prettier --write "frontend/src/**/*.{js,vue,css}"
+  ```
+
+---
+
+## 📄 License
+
+GNU General Public License v3.0 ([GPL-3.0](license.txt)) © Frappe Technologies Pvt. Ltd.

@@ -490,14 +490,18 @@ def get_user_info():
 @frappe.whitelist()
 def get_student_info():
 	email = frappe.session.user
-	if email == "Administrator":
-		return
-	student_info = frappe.db.get_list(
+	if not email or email in ("Guest", "Administrator"):
+		return None
+
+	student_records = frappe.db.get_list(
 		"Student",
 		fields=["*"],
 		filters={"user": email},
-	)[0]
+	)
+	if not student_records:
+		return None
 
+	student_info = student_records[0]
 	current_program = get_current_enrollment(student_info.name)
 	if current_program:
 		student_info["student_batches"] = get_student_batches(

@@ -77,7 +77,8 @@ onMounted(() => {
 const selectedGroup = ref('Select Student Group')
 const allStudentGroups = ref()
 function setStudentGroup() {
-  allStudentGroups.value = getStudentGroups().value
+  allStudentGroups.value = getStudentGroups().value || []
+  if (!allStudentGroups.value || allStudentGroups.value.length === 0) return
   allStudentGroups.value.forEach(
     (group) =>
       (group.onClick = () => {
@@ -87,14 +88,16 @@ function setStudentGroup() {
       })
   )
   selectedGroup.value =
-    allStudentGroups.value[0].label || 'Select Student Group'
-  attendanceResource.update({
-    params: {
-      student_group: selectedGroup.value,
-      student: studentInfo.name,
-    },
-  })
-  attendanceResource.reload()
+    allStudentGroups.value[0]?.label || 'Select Student Group'
+  if (studentInfo?.name) {
+    attendanceResource.update({
+      params: {
+        student_group: selectedGroup.value,
+        student: studentInfo.name,
+      },
+    })
+    attendanceResource.reload()
+  }
 }
 
 const newLeave = reactive({
@@ -119,6 +122,7 @@ const attendanceResource = createResource({
     student: studentInfo.name,
   },
   transform: (attendance) => {
+    if (!Array.isArray(attendance)) return []
     // filter attendance to remove duplicate attendance data
     attendance = attendance.filter(
       (attendance, index, self) =>

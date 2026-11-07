@@ -90,17 +90,20 @@ const feesResource = createResource({
   },
   onSuccess: (response) => {
     printFormat = response?.print_format
-    let invoices = response?.invoices
-    invoices = invoices.sort((a, b) => {
-      const statusOrder = { Overdue: 0, Unpaid: 1, Paid: 2 }
+    let invoices = response?.invoices || []
+    if (Array.isArray(invoices)) {
+      invoices = invoices.slice().sort((a, b) => {
+        const statusOrder = { Overdue: 0, Unpaid: 1, Paid: 2 }
 
-      const statusA = statusOrder[a.status]
-      const statusB = statusOrder[b.status]
+        const statusA = statusOrder[a.status] ?? 3
+        const statusB = statusOrder[b.status] ?? 3
 
-      if (statusA !== statusB) {
-        return statusA - statusB
-      }
-    })
+        if (statusA !== statusB) {
+          return statusA - statusB
+        }
+        return 0
+      })
+    }
     tableData.rows = invoices
   },
   auto: true,
