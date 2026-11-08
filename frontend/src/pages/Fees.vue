@@ -82,6 +82,7 @@ import { createToast } from '@/utils'
 
 const { getStudentInfo } = studentStore()
 let studentInfo = getStudentInfo().value
+let printFormat = 'Standard'
 
 const feesResource = createResource({
   url: 'education.education.api.get_student_invoices',
@@ -148,7 +149,6 @@ const tableData = reactive({
 const currentRow = ref(null)
 const showPaymentDialog = ref(false)
 
-let printFormat = 'Standard'
 const openInvoicePDF = (row) => {
   let url = `/api/method/frappe.utils.print_format.download_pdf?
 		doctype=${encodeURIComponent('Sales Invoice')}

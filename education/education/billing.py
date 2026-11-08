@@ -3,7 +3,7 @@ import razorpay
 from erpnext.accounts.doctype.journal_entry.journal_entry import (
 	get_payment_entry_against_invoice,
 )
-from erpnext.accounts.doctype.payment_entry.test_payment_entry import get_payment_entry
+from erpnext.accounts.doctype.payment_entry.payment_entry import get_payment_entry
 from frappe import _
 from frappe.utils import cint, nowdate, validate_phone_number
 
@@ -55,7 +55,7 @@ def get_payment_options(doctype: str, docname: str, phone: str, currency: str | 
 		"name": frappe.db.get_single_value("Website Settings", "app_name"),
 		"description": _("Payment for {0} course").format(details["outstanding_amount"]),
 		"order_id": order["id"],
-		"amount": cint(order["amount"]) * 100,
+		"amount": cint(order["amount"]),
 		"currency": order["currency"],
 		"prefill": {
 			"name": frappe.db.get_value("User", frappe.session.user, "full_name"),

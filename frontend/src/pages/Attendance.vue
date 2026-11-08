@@ -84,6 +84,12 @@ function setStudentGroup() {
       (group.onClick = () => {
         if (group.label === selectedGroup.value) return
         selectedGroup.value = group.label
+        attendanceResource.update({
+          params: {
+            student_batch: selectedGroup.value,
+            student: studentInfo.name,
+          },
+        })
         attendanceResource.reload()
       })
   )
@@ -92,7 +98,7 @@ function setStudentGroup() {
   if (studentInfo?.name) {
     attendanceResource.update({
       params: {
-        student_group: selectedGroup.value,
+        student_batch: selectedGroup.value,
         student: studentInfo.name,
       },
     })
@@ -118,7 +124,7 @@ const attendanceStatus = {
 const attendanceResource = createResource({
   url: 'education.education.api.get_student_attendance',
   params: {
-    student_group: selectedGroup.value,
+    student_batch: selectedGroup.value,
     student: studentInfo.name,
   },
   transform: (attendance) => {
