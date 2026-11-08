@@ -24,13 +24,15 @@ frontend/
 ├── src/
 │   ├── assets/             # Inter web fonts and global CSS
 │   ├── components/         # Reusable Vue components
-│   │   ├── AttendanceDetail.vue     # Daily attendance breakdown modal
 │   │   ├── Calendar.vue             # Timetable calendar display
+│   │   ├── CalendarEvent.vue        # Calendar event card and popover
 │   │   ├── FeesPaymentDialog.vue    # Fee checkout & payment integration
+│   │   ├── MissingData.vue          # Empty state placeholder
 │   │   ├── Navbar.vue               # Top navigation header
 │   │   ├── NewLeave.vue             # Leave application modal form
 │   │   ├── ProfileModal.vue         # Student profile details dialog
 │   │   ├── Sidebar.vue              # Main portal navigation sidebar
+│   │   ├── SidebarLink.vue          # Collapsible sidebar link
 │   │   └── UserDropdown.vue         # User profile menu & logout
 │   ├── pages/              # Portal page views (Routed)
 │   │   ├── Attendance.vue  # Monthly & term attendance overview
