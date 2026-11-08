@@ -141,32 +141,38 @@ def validate_attendance_date(student_batch, date):
 def make_attendance_records(
 	student, student_name, status, subject_schedule=None, student_batch=None, date=None
 ):
-	"""Creates/Update Attendance Record.
+	"""Creates/Updates Attendance Record.
 
 	:param student: Student.
 	:param student_name: Student Name.
 	:param subject_schedule: Subject Schedule.
 	:param status: Status (Present/Absent/Leave).
 	"""
-	student_attendance = frappe.get_doc(
-		{
-			"doctype": "Student Attendance",
-			"student": student,
-			"subject_schedule": subject_schedule,
-			"student_batch": student_batch,
-			"date": date,
-		}
-	)
-	if not student_attendance:
+	filters = {
+		"student": student,
+		"docstatus": ("!=", 2),
+	}
+	if subject_schedule:
+		filters["subject_schedule"] = subject_schedule
+	elif student_batch and date:
+		filters["student_batch"] = student_batch
+		filters["date"] = date
+
+	name = frappe.db.get_value("Student Attendance", filters, "name")
+	if name:
+		student_attendance = frappe.get_doc("Student Attendance", name)
+	else:
 		student_attendance = frappe.new_doc("Student Attendance")
+
 	student_attendance.student = student
 	student_attendance.student_name = student_name
 	student_attendance.subject_schedule = subject_schedule
 	student_attendance.student_batch = student_batch
 	student_attendance.date = date
 	student_attendance.status = status
-	student_attendance.save()
-	student_attendance.submit()
+	student_attendance.save(ignore_permissions=True)
+	if student_attendance.docstatus == 0:
+		student_attendance.submit()
 
 
 @frappe.whitelist()
@@ -588,16 +594,35 @@ def get_subject_schedule_for_student(
 
 @frappe.whitelist()
 def apply_leave(leave_data: dict, program_name: str):
+	if isinstance(leave_data, str):
+		leave_data = json.loads(leave_data)
+
 	attendance_based_on_subject_schedule = frappe.db.get_single_value(
 		"Education Settings", "attendance_based_on_subject_schedule"
 	)
+
+	# 1. Create and persist Student Leave Application record
+	leave_app = frappe.new_doc("Student Leave Application")
+	leave_app.student = leave_data.get("student")
+	leave_app.student_name = leave_data.get("student_name")
+	leave_app.from_date = leave_data.get("from_date")
+	leave_app.to_date = leave_data.get("to_date")
+	leave_app.reason = leave_data.get("reason")
+	leave_app.attendance_based_on = (
+		"Subject Schedule" if attendance_based_on_subject_schedule else "Student Batch"
+	)
+	leave_app.insert(ignore_permissions=True)
+
+	# 2. Record attendance
 	if attendance_based_on_subject_schedule:
-		apply_leave_based_on_subject_schedule(leave_data, program_name)
+		apply_leave_based_on_subject_schedule(leave_data, program_name, leave_app.name)
 	else:
-		apply_leave_based_on_student_batch(leave_data, program_name)
+		apply_leave_based_on_student_batch(leave_data, program_name, leave_app.name)
+
+	return leave_app.name
 
 
-def apply_leave_based_on_subject_schedule(leave_data, program_name):
+def apply_leave_based_on_subject_schedule(leave_data, program_name, leave_application=None):
 	subject_schedule_in_leave_period = frappe.db.get_list(
 		"Subject Schedule",
 		fields=["name", "schedule_date"],
@@ -613,21 +638,17 @@ def apply_leave_based_on_subject_schedule(leave_data, program_name):
 	if not subject_schedule_in_leave_period:
 		frappe.throw(_("No classes found in the leave period"))
 	for subject_schedule in subject_schedule_in_leave_period:
-		if not frappe.db.exists(
-			"Student Attendance",
-			{"subject_schedule": subject_schedule.get("name"), "docstatus": 1},
-		):
-			make_attendance_records(
-				leave_data.get("student"),
-				leave_data.get("student_name"),
-				"Leave",
-				subject_schedule.get("name"),
-				None,
-				subject_schedule.get("schedule_date"),
-			)
+		make_attendance_records(
+			leave_data.get("student"),
+			leave_data.get("student_name"),
+			"Leave",
+			subject_schedule.get("name"),
+			None,
+			subject_schedule.get("schedule_date"),
+		)
 
 
-def apply_leave_based_on_student_batch(leave_data, program_name):
+def apply_leave_based_on_student_batch(leave_data, program_name, leave_application=None):
 	student_batches = get_student_batches(leave_data.get("student"), program_name)
 	leave_dates = get_dates_from_timegrain(leave_data.get("from_date"), leave_data.get("to_date"))
 	for student_batch in student_batches:

@@ -111,7 +111,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, watch } from 'vue'
 import {
   Button,
   Badge,
@@ -167,6 +167,20 @@ const leavesList = createListResource({
   order_by: 'creation desc',
   auto: true,
 })
+
+watch(
+  () => studentInfo.value?.name,
+  (name) => {
+    if (name) {
+      leavesList.update({
+        filters: {
+          student: name,
+        },
+      })
+      leavesList.reload()
+    }
+  }
+)
 
 const tableRows = computed(() => {
   const data = leavesList.data || []

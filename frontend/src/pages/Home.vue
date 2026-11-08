@@ -185,7 +185,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import {
   GraduationCap,
   CalendarCheck,
@@ -199,7 +199,7 @@ import dayjs from 'dayjs'
 
 const { getCurrentProgram, getStudentInfo, getStudentGroups } = studentStore()
 
-const studentInfo = computed(() => getStudentInfo().value)
+const studentInfo = computed(() => getStudentInfo().value || {})
 const currentProgram = computed(() => getCurrentProgram().value)
 const studentGroups = computed(() => getStudentGroups().value || [])
 
@@ -208,12 +208,23 @@ const todayDateStr = dayjs().format('YYYY-MM-DD')
 
 const scheduleResource = createResource({
   url: 'education.education.api.get_subject_schedule_for_student',
-  params: {
-    program_name: currentProgram.value?.program,
-    student_batches: studentGroups.value,
+  makeParams() {
+    return {
+      program_name: currentProgram.value?.program,
+      student_batches: studentGroups.value,
+    }
   },
   auto: true,
 })
+
+watch(
+  () => [currentProgram.value?.program, studentGroups.value],
+  ([prog, groups]) => {
+    if (prog && groups && groups.length > 0) {
+      scheduleResource.reload()
+    }
+  }
+)
 
 const todaySchedule = computed(() => {
   const all = scheduleResource.data || []

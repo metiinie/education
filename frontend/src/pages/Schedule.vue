@@ -10,19 +10,22 @@
 <script setup>
 import Calendar from '@/components/Calendar.vue'
 import { createResource } from 'frappe-ui'
-import { ref } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { studentStore } from '@/stores/student'
+
 const { getCurrentProgram, getStudentGroups } = studentStore()
 
-const programName = ref(getCurrentProgram()?.value?.program)
-const studentGroup = ref(getStudentGroups().value)
+const currentProgram = computed(() => getCurrentProgram().value)
+const studentGroups = computed(() => getStudentGroups().value || [])
 const events = ref([])
 
 const scheduleResource = createResource({
   url: 'education.education.api.get_subject_schedule_for_student',
-  params: {
-    program_name: programName.value,
-    student_groups: studentGroup.value,
+  makeParams() {
+    return {
+      program_name: currentProgram.value?.program,
+      student_groups: studentGroups.value,
+    }
   },
   onSuccess: (response) => {
     let schedule = []
@@ -34,8 +37,12 @@ const scheduleResource = createResource({
           name: classSchedule.name,
           room: classSchedule.room,
           date: classSchedule.schedule_date,
-          from_time: classSchedule.from_time ? classSchedule.from_time.split('.')[0] : '',
-          to_time: classSchedule.to_time ? classSchedule.to_time.split('.')[0] : '',
+          from_time: classSchedule.from_time
+            ? classSchedule.from_time.split('.')[0]
+            : '',
+          to_time: classSchedule.to_time
+            ? classSchedule.to_time.split('.')[0]
+            : '',
           color: classSchedule.class_schedule_color,
         })
       })
@@ -44,6 +51,15 @@ const scheduleResource = createResource({
   },
   auto: true,
 })
+
+watch(
+  () => [currentProgram.value?.program, studentGroups.value],
+  ([prog, groups]) => {
+    if (prog && groups && groups.length > 0) {
+      scheduleResource.reload()
+    }
+  }
+)
 </script>
 
 <style></style>

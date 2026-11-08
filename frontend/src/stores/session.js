@@ -24,7 +24,7 @@ export const sessionStore = defineStore('education-session', () => {
   const isAdministrator = computed(() => user.value === 'Administrator')
   const hasStudentRecord = computed(() => {
     const s = studentStore()
-    return !!s.studentInfo?.value?.name
+    return !!(s.studentInfo?.name || s.studentInfo?.value?.name)
   })
 
   // Initialize and verify session against backend

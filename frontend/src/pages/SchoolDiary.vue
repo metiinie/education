@@ -82,14 +82,14 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { Badge, createResource } from 'frappe-ui'
 import { studentStore } from '@/stores/student'
 import MissingData from '@/components/MissingData.vue'
 import dayjs from 'dayjs'
 
 const { getStudentInfo } = studentStore()
-const studentInfo = computed(() => getStudentInfo().value)
+const studentInfo = computed(() => getStudentInfo().value || {})
 
 const filterTypes = ['All', 'Academic', 'General', 'Achievement', 'Medical']
 const selectedType = ref('All')
@@ -103,11 +103,22 @@ const typeThemeMap = {
 
 const logsResource = createResource({
   url: 'education.education.api.get_student_logs',
-  params: {
-    student: studentInfo.value?.name,
+  makeParams() {
+    return {
+      student: studentInfo.value?.name,
+    }
   },
   auto: true,
 })
+
+watch(
+  () => studentInfo.value?.name,
+  (name) => {
+    if (name) {
+      logsResource.reload()
+    }
+  }
+)
 
 const filteredLogs = computed(() => {
   const list = logsResource.data || []

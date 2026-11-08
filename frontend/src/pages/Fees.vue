@@ -65,7 +65,7 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
+import { reactive, ref, computed, watch } from 'vue'
 import {
   ListView,
   ListHeader,
@@ -74,6 +74,7 @@ import {
   ListRowItem,
   Badge,
   createResource,
+  Button,
 } from 'frappe-ui'
 import FeesPaymentDialog from '@/components/FeesPaymentDialog.vue'
 import { studentStore } from '@/stores/student'
@@ -81,13 +82,15 @@ import MissingData from '@/components/MissingData.vue'
 import { createToast } from '@/utils'
 
 const { getStudentInfo } = studentStore()
-let studentInfo = getStudentInfo().value
+const studentInfo = computed(() => getStudentInfo().value || {})
 let printFormat = 'Standard'
 
 const feesResource = createResource({
   url: 'education.education.api.get_student_invoices',
-  params: {
-    student: studentInfo.name,
+  makeParams() {
+    return {
+      student: studentInfo.value?.name,
+    }
   },
   onSuccess: (response) => {
     printFormat = response?.print_format
@@ -109,6 +112,15 @@ const feesResource = createResource({
   },
   auto: true,
 })
+
+watch(
+  () => studentInfo.value?.name,
+  (name) => {
+    if (name) {
+      feesResource.reload()
+    }
+  }
+)
 
 const tableData = reactive({
   rows: [],

@@ -52,30 +52,26 @@
   </div>
 </template>
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref, computed, watch } from 'vue'
 import { leaveStore } from '@/stores/leave'
 import { studentStore } from '@/stores/student'
 
-import { Dialog, createResource, Dropdown, FeatherIcon } from 'frappe-ui'
+import { Dialog, createResource, Dropdown, FeatherIcon, Button } from 'frappe-ui'
 import { storeToRefs } from 'pinia'
 import NewLeave from '@/components/NewLeave.vue'
 import Calendar from '@/components/Calendar.vue'
 import { createToast } from '@/utils'
 
 const { getCurrentProgram, getStudentInfo, getStudentGroups } = studentStore()
-const programName = ref(getCurrentProgram().value?.program)
-
-let studentInfo = getStudentInfo().value
+const programName = computed(() => getCurrentProgram().value?.program || '')
+const studentInfo = computed(() => getStudentInfo().value || {})
 
 // storeToRefs converts isAttendancePage to a ref, hence achieving reactivity
 const { isAttendancePage } = storeToRefs(leaveStore())
 
-onMounted(() => {
-  setStudentGroup()
-})
-
 const selectedGroup = ref('Select Student Group')
-const allStudentGroups = ref()
+const allStudentGroups = ref([])
+
 function setStudentGroup() {
   allStudentGroups.value = getStudentGroups().value || []
   if (!allStudentGroups.value || allStudentGroups.value.length === 0) return
@@ -87,7 +83,7 @@ function setStudentGroup() {
         attendanceResource.update({
           params: {
             student_batch: selectedGroup.value,
-            student: studentInfo.name,
+            student: studentInfo.value?.name,
           },
         })
         attendanceResource.reload()
@@ -95,20 +91,30 @@ function setStudentGroup() {
   )
   selectedGroup.value =
     allStudentGroups.value[0]?.label || 'Select Student Group'
-  if (studentInfo?.name) {
+  if (studentInfo.value?.name) {
     attendanceResource.update({
       params: {
         student_batch: selectedGroup.value,
-        student: studentInfo.name,
+        student: studentInfo.value.name,
       },
     })
     attendanceResource.reload()
   }
 }
 
+watch(
+  () => [getStudentGroups().value, studentInfo.value?.name],
+  ([groups, studentName]) => {
+    if (groups && groups.length > 0 && studentName) {
+      setStudentGroup()
+    }
+  },
+  { immediate: true }
+)
+
 const newLeave = reactive({
-  student: studentInfo.name,
-  student_name: studentInfo.student_name,
+  student: studentInfo.value?.name,
+  student_name: studentInfo.value?.student_name,
   from_date: '',
   to_date: '',
   reason: '',
@@ -125,7 +131,7 @@ const attendanceResource = createResource({
   url: 'education.education.api.get_student_attendance',
   params: {
     student_batch: selectedGroup.value,
-    student: studentInfo.name,
+    student: studentInfo.value?.name,
   },
   transform: (attendance) => {
     if (!Array.isArray(attendance)) return []
@@ -155,9 +161,13 @@ const attendanceResource = createResource({
 
 const applyLeave = createResource({
   url: 'education.education.api.apply_leave',
-  params: {
-    leave_data: newLeave,
-    program_name: programName.value,
+  makeParams() {
+    newLeave.student = studentInfo.value?.name
+    newLeave.student_name = studentInfo.value?.student_name
+    return {
+      leave_data: newLeave,
+      program_name: programName.value,
+    }
   },
   onSuccess: () => {
     isAttendancePage.value = false
