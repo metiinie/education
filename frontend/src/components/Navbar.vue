@@ -4,7 +4,7 @@
   >
     <div class="flex gap-2 items-center cursor-pointer">
       <h3 class="font-medium text-lg text-gray-900">
-        {{ currentRoute }}
+        {{ currentTitle }}
       </h3>
     </div>
     <div class="flex flex-row gap-2">
@@ -25,6 +25,20 @@ import { leaveStore } from '@/stores/leave'
 
 const router = useRouter()
 const currentRoute = computed(() => router.currentRoute.value.name)
+
+const routeTitleMap = {
+  Home: 'Dashboard',
+  Schedule: 'Weekly Schedule',
+  Grades: 'Report Cards & Grades',
+  Fees: 'Fees & Invoices',
+  Attendance: 'Attendance Overview',
+  Leaves: 'Leave Applications',
+  SchoolDiary: 'School Diary',
+}
+
+const currentTitle = computed(
+  () => routeTitleMap[currentRoute.value] || currentRoute.value || 'Dashboard'
+)
 
 const { setIsAttendancePage } = leaveStore()
 </script>

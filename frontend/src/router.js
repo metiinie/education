@@ -4,7 +4,9 @@ import { sessionStore } from '@/stores/session'
 const routes = [
   {
     path: '/',
-    redirect: '/schedule',
+    name: 'Home',
+    component: () => import('@/pages/Home.vue'),
+    meta: { requiresAuth: true },
   },
   {
     path: '/login',
@@ -37,11 +39,23 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
+    path: '/leaves',
+    name: 'Leaves',
+    component: () => import('@/pages/Leaves.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/diary',
+    name: 'SchoolDiary',
+    component: () => import('@/pages/SchoolDiary.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
     path: '/:catchAll(.*)*',
     name: 'NotFound',
     redirect: (to) => {
       const session = sessionStore()
-      return session.isLoggedIn ? '/schedule' : '/login'
+      return session.isLoggedIn ? '/' : '/login'
     },
   },
 ]
@@ -62,7 +76,7 @@ router.beforeEach(async (to, from) => {
   // 2. Handle public routes (e.g. Login)
   if (to.meta.isPublic) {
     if (session.isLoggedIn) {
-      const target = to.query.redirect || '/schedule'
+      const target = to.query.redirect || '/'
       if (to.path !== target) {
         return target
       }

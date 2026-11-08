@@ -738,3 +738,24 @@ def get_student_attendance(student: str, student_batch: str):
 		filters={"student": student, "student_batch": student_batch, "docstatus": 1},
 		fields=["date", "status", "name"],
 	)
+
+
+@frappe.whitelist()
+def get_student_logs(student: str):
+	if not student:
+		return []
+	return frappe.db.get_list(
+		"Student Log",
+		filters={"student": student},
+		fields=[
+			"name",
+			"date",
+			"type",
+			"academic_year",
+			"academic_term",
+			"program",
+			"student_batch",
+			"log",
+		],
+		order_by="date desc, modified desc",
+	)
